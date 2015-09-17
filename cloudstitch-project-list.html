@@ -1,0 +1,133 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="./cloudstitch-project-card.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../paper-input/paper-input.html">
+<link rel="import" href="../paper-icon-button/paper-icon-button.html">
+<link rel="import" href="../paper-toast/paper-toast.html">
+<link rel="import" href="../iron-ajax/iron-ajax.html">
+
+<!--
+Example:
+
+    <cloudstitch-project-list></cloudstitch-project-list>
+
+@group Cloudstitch
+@element cloudstitch-project-list
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="cloudstitch-project-list">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+  </style>
+
+  <template>
+    <iron-ajax id="styleLoader"
+      auto
+      on-response="_dataResponse"
+      on-error="_dataError"
+      last-result="{{projects}}"
+      handle-as="json"
+      url="{{datasource}}"
+      ></iron-ajax>
+    <paper-toast id="errorToast" text="Could not load projects."></paper-toast>
+    <paper-input class="short" label="Search" id="searchInput" value="{{filterVal::input}}">
+      <iron-icon icon="search" prefix></iron-icon>
+      <paper-icon-button suffix on-tap="clearSearch"
+          icon="clear" alt="clear" title="clear" tabindex="0">
+      </paper-icon-button>
+    </paper-input>
+
+    <template is="dom-repeat" id="projects" items="{{projects}}" filter="{{_filter(filterVal)}}">
+      <cloudstitch-project-card 
+        title="{{item.title}}"
+        username="{{item.username}}"
+        appname="{{item.appname}}"
+        icon="{{item.icon}}"
+      ></cloudstitch-project-card>
+    </template>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'cloudstitch-project-list',
+  
+    properties: {
+      datasource: {
+        type: String
+      },
+      projects: {
+        type: Array
+      }
+    },
+
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+    },
+
+    clearSearch: function() {
+      this.$.searchInput.value = '';
+    },
+
+    _dataResponse: function(e) {
+      console.log('r', e);
+    },
+
+    _dataError: function(e) {
+      console.log(e);
+      if (e.detail.lastResponse && e.detail.lastResponse.message) {
+        this.$.errorToast.text = e.detail.lastResponse.message;
+      } else {
+        this.$.errorToast.text = 'Could not load projects';
+      }
+      this.$.errorToast.show();
+    },
+
+    _filter: function(query) {
+      query = query.toLowerCase();
+
+      return function(item) {
+        try {
+          if (item.title && (item.title.toLowerCase().indexOf(query) > -1)) return true;
+          if (item.description && (item.description.toLowerCase().indexOf(query) > -1)) return true;
+          if (item.username && (item.username.toLowerCase().indexOf(query) > -1)) return true;
+          if (item.appname && (item.appname.toLowerCase().indexOf(query) > -1)) return true;
+        } catch(e) {
+          return false;
+        }
+        return false;
+      };
+    },
+
+  });
+
+</script>

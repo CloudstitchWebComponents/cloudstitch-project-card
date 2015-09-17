@@ -1,0 +1,199 @@
+<link rel="import" href="../polymer/polymer.html">
+<link rel="import" href="../paper-button/paper-button.html">
+<link rel="import" href="../iron-icons/iron-icons.html">
+<link rel="import" href="../iron-meta/iron-meta.html">
+<link rel="import" href="../iron-image/iron-image.html">
+<link rel="import" href="../paper-card/paper-card.html">
+
+<!--
+An element providing a solution to no problem in particular.
+
+Example:
+
+    <cloudstitch-project-card></cloudstitch-project-card>
+
+@group Cloudstitch
+@element cloudstitch-project-card
+@demo demo/index.html
+@hero hero.svg
+-->
+<dom-module id="cloudstitch-project-card">
+
+  <style>
+    :host {
+      display: block;
+      box-sizing: border-box;
+    }
+
+    .avatar {
+      width: 100px;
+      height: 100px;
+      margin: 10px;
+      float: left;
+      background-color: lightgray;
+    }
+
+    .project-card {
+      display: inline-block;
+      width: 100%;
+      clear: both;
+      float: none;
+      color: #333;
+      text-decoration: none;
+    }
+
+    .project-card:hover {
+      background-color: rgb(249, 249, 249);
+    }
+
+    .text {
+      display: block;
+      min-height: 110px;
+      margin: 10px;
+      float: left;
+    }
+
+    h2.proj-title {
+      font-size: 20px;      
+      margin: 0;
+      padding: 0;
+    }
+
+    h3.proj-kind {
+      font-size: 14px;
+      font-weight: normal;
+      color: #777;
+      margin: 0;
+      padding: 0;
+    }
+
+    .action-buttons {
+      float: right;
+      display: block;
+      margin: 10px;
+      padding-top: 20px;
+    }    
+    .clone-btn {
+      background-color: white;
+    }
+
+  </style>
+
+  <template>
+    <a href="{{link}}">
+    <paper-card class="project-card" on-tap="cardTap">
+      <iron-image class="avatar" sizing="cover" preload fade src="{{icon}}"></iron-image>
+      <div class="text">
+        <h2 class="proj-title">{{title}}</h2>
+        <h3 class="proj-kind">{{kindString}}</h3>
+      </div>
+      <div class="action-buttons">
+        <paper-button class="clone-btn" raised on-tap="cloneTap">Clone</paper-button>
+        <form id="clone" syle="display:none" method="POST" action="/{{username}}/{{appname}}/fork">
+          <input type="hidden" name="_csrf" value="{{token}}" />      
+        </form>
+      </div>
+    </paper-card>
+    </a>
+  </template>
+
+</dom-module>
+
+<script>
+
+  Polymer({
+
+    is: 'cloudstitch-project-card',
+
+    properties: {
+      "title": String,
+      "username": String,
+      "appname": String,
+      "icon": String,
+      "isMine": {
+        type: Boolean,
+        value: false
+      },
+      "description": String,
+      "parentUsername": String,
+      "parentAppname": String,
+      "token": {
+        type: Object,
+        value: ''
+      },
+      "kindString": {
+        type: String,
+        computed: "makeKindString(kind)"
+      },
+      "kind": {
+        type: String,
+        value: "web"
+      },
+      "link": {
+        type: String,
+        computed: "appUrl(username, appname)"
+      }
+    },
+
+    // Element Lifecycle
+
+    ready: function() {
+      // `ready` is called after all elements have been configured, but
+      // propagates bottom-up. This element's children are ready, but parents
+      // are not.
+      //
+      // This is the point where you should make modifications to the DOM (when
+      // necessary), or kick off any processes the element wants to perform.
+    },
+
+    attached: function() {
+      // `attached` fires once the element and its parents have been inserted
+      // into a document.
+      //
+      // This is a good place to perform any work related to your element's
+      // visual state or active behavior (measuring sizes, beginning animations,
+      // loading resources, etc).
+      this.setToken();
+    },
+
+    detached: function() {
+      // The analog to `attached`, `detached` fires when the element has been
+      // removed from a document.
+      //
+      // Use this to clean up anything you did in `attached`.
+    },
+
+    // Element Behavior
+    setToken: function() {
+      var token = new Polymer.IronMetaQuery({key: 'token'}).value;
+      this.token = token;
+      if (! token) {
+        console.log("Couldn't find token");
+      }
+    },
+
+    makeKindString: function(kind) {
+      if (kind == 'web') {
+        return 'Web Widget'
+      } else {
+        return 'Web Widget'
+      }
+    },
+
+    appUrl: function(username, appname) {
+      return "/" + username + "/" + appname;
+    },
+
+    cloneTap: function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      this.$.clone.submit();
+    },
+
+    cardTap: function() {
+      this.$.clone.submit();      
+    }
+
+  });
+
+</script>
